@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050b15">
+  <meta name="description" content="DIP 5.0 - Digital Instrument Panel simulation dashboard">
+  <title>DIP 5.0 | Digital Instrument Panel</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <main class="app-shell">
+    <header class="topbar panel">
+      <div class="brand-mark" aria-hidden="true">DIP<span>5.0</span></div>
+      <div class="brand-copy">
+        <h1>DIGITAL INSTRUMENT PANEL</h1>
+        <p>ADVANCED VEHICLE SYSTEMS <span class="separator">/</span> SIMULATION CORE</p>
+      </div>
+      <div class="header-right">
+        <div class="online-status"><i class="pulse-dot"></i><span>SYSTEM ONLINE</span></div>
+        <div class="clock" id="clock">--:--:--</div>
+      </div>
+    </header>
+
+    <div class="simulation-banner">
+      <span class="banner-icon">ⓘ</span>
+      <span>SIMULATION MODE</span>
+      <span class="banner-detail">All readings are simulated. Not connected to a real vehicle.</span>
+    </div>
+
+    <section class="dashboard-grid" aria-label="Vehicle simulation dashboard">
+      <article class="panel speed-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">01 / PRIMARY SYSTEM</span><h2>VEHICLE SPEED</h2></div>
+          <span class="live-tag"><i></i> LIVE</span>
+        </div>
+        <div class="speed-gauge-wrap">
+          <svg class="speed-gauge" viewBox="0 0 320 220" role="img" aria-label="Speed gauge from zero to 240 kilometers per hour">
+            <defs>
+              <linearGradient id="speedGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#55f2ef"/>
+                <stop offset="100%" stop-color="#39a9ff"/>
+              </linearGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="3.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <path class="gauge-track" d="M 43 185 A 117 117 0 1 1 277 185"/>
+            <path class="gauge-progress" id="speedArc" d="M 43 185 A 117 117 0 1 1 277 185" pathLength="100" />
+            <g id="speedTicks"></g>
+            <circle cx="160" cy="185" r="4" fill="#55f2ef"/>
+          </svg>
+          <div class="speed-readout">
+            <div class="speed-number" id="speedValue">064</div>
+            <div class="speed-unit">KM/H</div>
+          </div>
+        </div>
+        <div class="speed-control">
+          <button class="icon-button" id="speedDown" aria-label="Decrease speed">−</button>
+          <input id="speedSlider" type="range" min="0" max="240" value="64" step="1" aria-label="Set simulated speed">
+          <button class="icon-button" id="speedUp" aria-label="Increase speed">+</button>
+        </div>
+        <div class="range-labels"><span>0 KM/H</span><span>240 KM/H</span></div>
+        <div class="speed-footer"><span><i class="tiny-dot cyan"></i> SIMULATED SPEED</span><span id="speedState">CRUISING</span></div>
+      </article>
+
+      <article class="panel rpm-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">02 / POWERTRAIN</span><h2>ENGINE RPM</h2></div>
+          <span class="unit-chip">×1000 RPM</span>
+        </div>
+        <div class="rpm-value-row"><strong id="rpmValue">2.4</strong><span>×1000 <small>RPM</small></span></div>
+        <div class="rpm-bar" id="rpmBar" aria-label="Engine RPM meter"></div>
+        <div class="rpm-scale"><span>0</span><span>2</span><span>4</span><span>6</span><span>8K</span></div>
+        <div class="metric-divider"></div>
+        <div class="inline-metric"><span>ENGINE LOAD</span><strong id="engineLoad">32<span>%</span></strong></div>
+        <div class="mini-track"><div id="loadBar" class="mini-fill cyan-fill"></div></div>
+        <p class="micro-note">POWERTRAIN OUTPUT IS SIMULATED</p>
+      </article>
+
+      <article class="panel battery-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">03 / ENERGY</span><h2>BATTERY</h2></div>
+          <span class="status-pill normal" id="batteryState">NOMINAL</span>
+        </div>
+        <div class="battery-content">
+          <div class="battery-icon"><div class="battery-level" id="batteryLevel"></div></div>
+          <div class="battery-readout"><strong id="batteryValue">86</strong><span>%</span><p>CHARGE REMAINING</p></div>
+        </div>
+        <div class="mini-track tall"><div id="batteryBar" class="mini-fill green-fill"></div></div>
+        <div class="battery-bottom"><span><i class="tiny-dot green"></i> ENERGY CELL</span><span id="batteryVoltage">392 V SIM</span></div>
+      </article>
+
+      <article class="panel temp-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">04 / THERMAL</span><h2>ENGINE TEMP</h2></div>
+          <span class="status-pill normal" id="tempState">NORMAL</span>
+        </div>
+        <div class="temp-readout"><strong id="tempValue">84</strong><span>°C</span></div>
+        <div class="temp-thermometer"><div id="tempBar" class="temp-fill"></div></div>
+        <div class="temp-scale"><span>40°C</span><span>130°C</span></div>
+        <div class="temp-status-line"><span class="tiny-dot green" id="tempDot"></span><span id="tempMessage">THERMAL RANGE STABLE</span></div>
+      </article>
+
+      <article class="panel distance-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">05 / TRIP COMPUTER</span><h2>DISTANCE</h2></div>
+          <span class="unit-chip">TRIP A</span>
+        </div>
+        <div class="distance-readout"><strong id="distanceValue">0.0</strong><span>KM</span></div>
+        <div class="distance-subline"><span><i class="tiny-dot blue"></i> SESSION DISTANCE</span><span id="elapsedTime">00:00</span></div>
+        <div class="distance-divider"></div>
+        <div class="distance-actions">
+          <div><span class="micro-label">SIMULATION TIME</span><strong id="runtimeValue">00:00:00</strong></div>
+          <button class="outline-button" id="resetTrip">↺ RESET TRIP</button>
+        </div>
+      </article>
+
+      <article class="panel status-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">06 / SYSTEM MONITOR</span><h2>SYSTEM STATUS</h2></div>
+          <span class="status-pip"><i id="systemDot"></i><span id="systemShort">ACTIVE</span></span>
+        </div>
+        <div class="system-state" id="systemState">ACTIVE</div>
+        <p class="system-caption" id="systemCaption">SIMULATION RUNNING · ALL VIRTUAL SYSTEMS NOMINAL</p>
+        <div class="status-list">
+          <div><span><i class="status-light green-light"></i> CORE PROCESSOR</span><b>ONLINE</b></div>
+          <div><span><i class="status-light green-light"></i> SENSOR EMULATOR</span><b>ONLINE</b></div>
+          <div><span><i class="status-light cyan-light"></i> DATA STREAM</span><b id="dataStream">LIVE</b></div>
+        </div>
+        <div class="status-actions">
+          <button class="primary-button" id="runToggle"><span id="runIcon">Ⅱ</span> <span id="runLabel">PAUSE SIMULATION</span></button>
+          <button class="outline-button" id="randomize">⟳ AUTO TEST</button>
+        </div>
+      </article>
+
+      <article class="panel telemetry-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">07 / REAL-TIME FEED</span><h2>LIVE TELEMETRY</h2></div>
+          <span class="telemetry-indicator"><span></span> STREAMING</span>
+        </div>
+        <div class="telemetry-row">
+          <div class="telemetry-label"><span>THROTTLE</span><small>INPUT SIGNAL</small></div>
+          <div class="telemetry-meter"><div class="mini-track"><div id="throttleBar" class="mini-fill cyan-fill"></div></div></div>
+          <div class="telemetry-value"><strong id="throttleValue">28</strong><span>%</span></div>
+        </div>
+        <div class="telemetry-row">
+          <div class="telemetry-label"><span>TORQUE</span><small>OUTPUT ESTIMATE</small></div>
+          <div class="telemetry-meter"><div class="mini-track"><div id="torqueBar" class="mini-fill purple-fill"></div></div></div>
+          <div class="telemetry-value"><strong id="torqueValue">142</strong><span>Nm</span></div>
+        </div>
+        <div class="telemetry-row">
+          <div class="telemetry-label"><span>COOLANT</span><small>THERMAL LOOP</small></div>
+          <div class="telemetry-meter"><div class="mini-track"><div id="coolantBar" class="mini-fill orange-fill"></div></div></div>
+          <div class="telemetry-value"><strong id="coolantValue">78</strong><span>°C</span></div>
+        </div>
+        <div class="telemetry-footer"><span>PACKET STATUS <b class="green-text">VALID</b></span><span>MODE <b>SIM / LOCAL</b></span></div>
+      </article>
+
+      <article class="panel controls-panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">08 / CONTROL DECK</span><h2>SIMULATION CONTROLS</h2></div>
+          <span class="unit-chip">MANUAL</span>
+        </div>
+        <div class="control-setting">
+          <div><label for="throttleSlider">THROTTLE INPUT</label><strong id="throttleSetting">28%</strong></div>
+          <input id="throttleSlider" type="range" min="0" max="100" value="28" step="1">
+        </div>
+        <div class="control-setting">
+          <div><label for="tempSlider">THERMAL OFFSET</label><strong id="tempSetting">0°C</strong></div>
+          <input id="tempSlider" type="range" min="-20" max="35" value="0" step="1">
+        </div>
+        <div class="control-setting">
+          <div><label for="batterySlider">BATTERY LEVEL</label><strong id="batterySetting">86%</strong></div>
+          <input id="batterySlider" type="range" min="0" max="100" value="86" step="1">
+        </div>
+        <p class="micro-note">CONTROL INPUTS MODIFY VIRTUAL VALUES ONLY.</p>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <span><b>DIP 5.0</b> <span class="footer-muted">DIGITAL INSTRUMENT PANEL</span></span>
+      <span class="footer-center">SIMULATION ONLY · NO VEHICLE CONNECTION</span>
+      <span id="footerClock">LOCAL SYSTEM CLOCK</span>
+    </footer>
+  </main>
+</body>
+</html>
